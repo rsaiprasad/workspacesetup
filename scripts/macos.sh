@@ -123,7 +123,7 @@ install_languages() {
         mise use --global python@latest
 
         echo "Installing latest Node.js via mise..."
-        mise use --global node@latest
+        mise use --global node@lts
 
         # Install CLIs now that Node.js is available
         eval "$(mise activate bash)"

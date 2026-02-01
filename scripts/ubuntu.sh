@@ -103,12 +103,16 @@ install_languages() {
     # Ensure mise is in PATH
     export PATH="$HOME/.local/bin:$PATH"
 
+    # Install libatomic1 - required by Node.js
+    echo "Installing Node.js dependencies..."
+    sudo apt-get install -y libatomic1
+
     if command -v mise &> /dev/null; then
         echo "Installing latest Python via mise..."
         mise use --global python@latest
 
-        echo "Installing latest Node.js via mise..."
-        mise use --global node@latest
+        echo "Installing Node.js LTS via mise..."
+        mise use --global node@lts
 
         # Install CLIs now that Node.js is available
         eval "$(mise activate bash)"

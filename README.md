@@ -61,7 +61,7 @@ chmod +x setup.sh
 - **Git**: Version control
 - **mise**: Runtime version manager (replaces asdf, nvm, pyenv)
 - **Python**: Latest version via mise
-- **Node.js**: Latest version via mise
+- **Node.js**: LTS version via mise
 - **VS Code**: Code editor with Cline extension
 
 ### CLI Tools
