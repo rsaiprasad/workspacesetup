@@ -29,19 +29,13 @@ install_prezto() {
         echo "Installing Prezto..."
         git clone --recursive https://github.com/sorin-ionescu/prezto.git "$prezto_dir"
 
-        # Create zsh config files
-        setopt EXTENDED_GLOB 2>/dev/null || true
-        for rcfile in "${prezto_dir}"/runcoms/^README.md(.N); do
-            ln -sf "$rcfile" "${ZDOTDIR:-$HOME}/.${rcfile:t}" 2>/dev/null || true
-        done
-
-        # Manually link the files if the above didn't work
-        ln -sf "$prezto_dir/runcoms/zlogin" "$HOME/.zlogin" 2>/dev/null || true
-        ln -sf "$prezto_dir/runcoms/zlogout" "$HOME/.zlogout" 2>/dev/null || true
-        ln -sf "$prezto_dir/runcoms/zpreztorc" "$HOME/.zpreztorc" 2>/dev/null || true
-        ln -sf "$prezto_dir/runcoms/zprofile" "$HOME/.zprofile" 2>/dev/null || true
-        ln -sf "$prezto_dir/runcoms/zshenv" "$HOME/.zshenv" 2>/dev/null || true
-        ln -sf "$prezto_dir/runcoms/zshrc" "$HOME/.zshrc" 2>/dev/null || true
+        # Create zsh config symlinks
+        ln -sf "$prezto_dir/runcoms/zlogin" "$HOME/.zlogin"
+        ln -sf "$prezto_dir/runcoms/zlogout" "$HOME/.zlogout"
+        ln -sf "$prezto_dir/runcoms/zpreztorc" "$HOME/.zpreztorc"
+        ln -sf "$prezto_dir/runcoms/zprofile" "$HOME/.zprofile"
+        ln -sf "$prezto_dir/runcoms/zshenv" "$HOME/.zshenv"
+        ln -sf "$prezto_dir/runcoms/zshrc" "$HOME/.zshrc"
     else
         echo "Prezto is already installed"
     fi

@@ -44,12 +44,13 @@ install_prezto() {
         echo "Installing Prezto..."
         git clone --recursive https://github.com/sorin-ionescu/prezto.git "$prezto_dir"
 
-        # Create zsh config files
-        for rcfile in "$prezto_dir"/runcoms/z*; do
-            if [[ -f "$rcfile" && "$(basename "$rcfile")" != "README.md" ]]; then
-                ln -sf "$rcfile" "$HOME/.$(basename "$rcfile")"
-            fi
-        done
+        # Create zsh config symlinks
+        ln -sf "$prezto_dir/runcoms/zlogin" "$HOME/.zlogin"
+        ln -sf "$prezto_dir/runcoms/zlogout" "$HOME/.zlogout"
+        ln -sf "$prezto_dir/runcoms/zpreztorc" "$HOME/.zpreztorc"
+        ln -sf "$prezto_dir/runcoms/zprofile" "$HOME/.zprofile"
+        ln -sf "$prezto_dir/runcoms/zshenv" "$HOME/.zshenv"
+        ln -sf "$prezto_dir/runcoms/zshrc" "$HOME/.zshrc"
     else
         echo "Prezto is already installed"
     fi
