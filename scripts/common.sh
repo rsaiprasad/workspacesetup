@@ -84,10 +84,11 @@ install_zsh_z() {
 configure_zshrc_mise() {
     local zshrc="$HOME/.zshrc"
 
-    # Add mise activation if not already present
+    # Add mise to PATH and activation if not already present
     if ! grep -q "mise activate" "$zshrc" 2>/dev/null; then
         echo "" >> "$zshrc"
-        echo "# mise activation" >> "$zshrc"
+        echo "# mise setup" >> "$zshrc"
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$zshrc"
         echo 'eval "$(mise activate zsh)"' >> "$zshrc"
         echo "mise activation added to .zshrc"
     else
