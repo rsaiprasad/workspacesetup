@@ -64,16 +64,38 @@ echo "=== Installing Chrome ==="
 install_chrome
 
 echo ""
+echo "=== Installing Obsidian ==="
+install_obsidian
+
+echo ""
+echo "=== Installing Zoom ==="
+install_zoom
+
+if [[ "$OS" == "macos" ]]; then
+    echo ""
+    echo "=== Installing OpenSuperWhisper ==="
+    install_opensuperwhisper
+
+    echo ""
+    echo "=== Installing iTerm2 ==="
+    install_iterm2
+fi
+
+echo ""
 echo "=== Installing mise ==="
 install_mise
 
 echo ""
-echo "=== Installing Python and Node.js via mise ==="
+echo "=== Installing Python, Node.js, and Bun via mise ==="
 install_languages
 
 echo ""
 echo "=== Installing VS Code ==="
 install_vscode
+
+echo ""
+echo "=== Installing VS Code Extensions ==="
+install_vscode_extensions
 
 echo ""
 echo "=== Installing Cline Extension ==="

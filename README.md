@@ -15,12 +15,19 @@ Automated workspace setup script for Ubuntu and macOS. Sets up a development env
 - **Tools**:
   - Git
   - Google Chrome
+  - Obsidian
+  - Zoom
   - mise (for managing language runtimes)
-  - Python (latest via mise)
-  - Node.js (latest via mise)
-  - VS Code with Cline extension
+  - Python 3.12 (via mise)
+  - Node.js 24 (via mise)
+  - Bun (via mise)
+  - VS Code with extensions bundle
   - Gemini CLI
   - Claude Code CLI
+
+- **macOS Only**:
+  - OpenSuperWhisper
+  - iTerm2 terminal
 
 - **Ubuntu Only**:
   - Terminator terminal with Solarized Dark theme

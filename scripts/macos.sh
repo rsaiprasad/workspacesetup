@@ -107,6 +107,47 @@ install_chrome() {
     fi
 }
 
+install_obsidian() {
+    if [[ ! -d "/Applications/Obsidian.app" ]]; then
+        echo "Installing Obsidian..."
+        ensure_homebrew
+        brew install --cask obsidian
+    else
+        echo "Obsidian is already installed"
+    fi
+}
+
+install_zoom() {
+    if [[ ! -d "/Applications/zoom.us.app" ]]; then
+        echo "Installing Zoom..."
+        ensure_homebrew
+        brew install --cask zoom
+    else
+        echo "Zoom is already installed"
+    fi
+}
+
+install_opensuperwhisper() {
+    if [[ ! -d "/Applications/OpenSuperWhisper.app" ]]; then
+        echo "Installing OpenSuperWhisper..."
+        ensure_homebrew
+        brew install --cask opensuperwhisper
+    else
+        echo "OpenSuperWhisper is already installed"
+    fi
+}
+
+install_iterm2() {
+    if [[ ! -d "/Applications/iTerm.app" ]]; then
+        echo "Installing iTerm2..."
+        ensure_homebrew
+        brew install --cask iterm2
+        echo "Note: Set Solarized theme in iTerm2 > Preferences > Profiles > Colors"
+    else
+        echo "iTerm2 is already installed"
+    fi
+}
+
 install_mise() {
     if ! command -v mise &> /dev/null; then
         echo "Installing mise..."
@@ -119,11 +160,14 @@ install_mise() {
 
 install_languages() {
     if command -v mise &> /dev/null; then
-        echo "Installing latest Python via mise..."
-        mise use --global python@latest
+        echo "Installing Python 3.12 via mise..."
+        mise use --global python@3.12
 
-        echo "Installing latest Node.js via mise..."
-        mise use --global node@lts
+        echo "Installing Node.js 24 via mise..."
+        mise use --global node@24
+
+        echo "Installing Bun via mise..."
+        mise use --global bun@latest
 
         # Install CLIs now that Node.js is available
         eval "$(mise activate bash)"
@@ -145,6 +189,56 @@ install_vscode() {
         brew install --cask visual-studio-code
     else
         echo "VS Code is already installed"
+    fi
+}
+
+install_vscode_extensions() {
+    if command -v code &> /dev/null; then
+        echo "Installing VS Code extensions..."
+        code --install-extension amazonwebservices-aisolutionsarchitecture.bedrock-vscode-playground
+        code --install-extension amazonwebservices.amazon-q-vscode
+        code --install-extension amazonwebservices.aws-toolkit-vscode
+        code --install-extension amazonwebservices.codewhisperer-for-command-line-companion
+        code --install-extension amzn.amzn-pippin
+        code --install-extension amzn.vscode-crux
+        code --install-extension apollographql.vscode-apollo
+        code --install-extension asbx.amzn-cline
+        code --install-extension aws-scripting-guy.cform
+        code --install-extension bierner.markdown-mermaid
+        code --install-extension charliermarsh.ruff
+        code --install-extension esbenp.prettier-vscode
+        code --install-extension fwcd.kotlin
+        code --install-extension github.remotehub
+        code --install-extension github.vscode-pull-request-github
+        code --install-extension marklel.vscode-brazil
+        code --install-extension mathiasfrohlich.kotlin
+        code --install-extension mechatroner.rainbow-csv
+        code --install-extension ms-azuretools.vscode-containers
+        code --install-extension ms-python.black-formatter
+        code --install-extension ms-python.debugpy
+        code --install-extension ms-python.python
+        code --install-extension ms-python.vscode-pylance
+        code --install-extension ms-python.vscode-python-envs
+        code --install-extension ms-toolsai.jupyter
+        code --install-extension ms-toolsai.jupyter-keymap
+        code --install-extension ms-toolsai.jupyter-renderers
+        code --install-extension ms-toolsai.vscode-jupyter-cell-tags
+        code --install-extension ms-toolsai.vscode-jupyter-slideshow
+        code --install-extension ms-vscode-remote.remote-containers
+        code --install-extension ms-vscode-remote.remote-ssh
+        code --install-extension ms-vscode-remote.remote-ssh-edit
+        code --install-extension ms-vscode.azure-repos
+        code --install-extension ms-vscode.remote-explorer
+        code --install-extension ms-vscode.remote-repositories
+        code --install-extension mtxr.sqltools
+        code --install-extension mtxr.sqltools-driver-mysql
+        code --install-extension rangav.vscode-thunder-client
+        code --install-extension redhat.vscode-yaml
+        code --install-extension syler.sass-indented
+        code --install-extension vscjava.vscode-gradle
+        code --install-extension zeshuaro.vscode-python-poetry
+    else
+        echo "VS Code not found, skipping extensions installation"
     fi
 }
 

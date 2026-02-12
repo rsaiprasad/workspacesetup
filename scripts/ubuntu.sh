@@ -87,6 +87,28 @@ install_chrome() {
     fi
 }
 
+install_obsidian() {
+    if ! command -v obsidian &> /dev/null; then
+        echo "Installing Obsidian..."
+        wget -q -O /tmp/obsidian.deb "https://github.com/obsidianmd/obsidian-releases/releases/latest/download/obsidian_amd64.deb"
+        sudo apt-get install -y /tmp/obsidian.deb
+        rm /tmp/obsidian.deb
+    else
+        echo "Obsidian is already installed"
+    fi
+}
+
+install_zoom() {
+    if ! command -v zoom &> /dev/null; then
+        echo "Installing Zoom..."
+        wget -q -O /tmp/zoom.deb "https://zoom.us/client/latest/zoom_amd64.deb"
+        sudo apt-get install -y /tmp/zoom.deb
+        rm /tmp/zoom.deb
+    else
+        echo "Zoom is already installed"
+    fi
+}
+
 install_mise() {
     if ! command -v mise &> /dev/null; then
         echo "Installing mise..."
@@ -108,11 +130,14 @@ install_languages() {
     sudo apt-get install -y libatomic1
 
     if command -v mise &> /dev/null; then
-        echo "Installing latest Python via mise..."
-        mise use --global python@latest
+        echo "Installing Python 3.12 via mise..."
+        mise use --global python@3.12
 
-        echo "Installing Node.js LTS via mise..."
-        mise use --global node@lts
+        echo "Installing Node.js 24 via mise..."
+        mise use --global node@24
+
+        echo "Installing Bun via mise..."
+        mise use --global bun@latest
 
         # Install CLIs now that Node.js is available
         eval "$(mise activate bash)"
@@ -140,6 +165,56 @@ install_vscode() {
         sudo apt-get install -y code
     else
         echo "VS Code is already installed"
+    fi
+}
+
+install_vscode_extensions() {
+    if command -v code &> /dev/null; then
+        echo "Installing VS Code extensions..."
+        code --install-extension amazonwebservices-aisolutionsarchitecture.bedrock-vscode-playground
+        code --install-extension amazonwebservices.amazon-q-vscode
+        code --install-extension amazonwebservices.aws-toolkit-vscode
+        code --install-extension amazonwebservices.codewhisperer-for-command-line-companion
+        code --install-extension amzn.amzn-pippin
+        code --install-extension amzn.vscode-crux
+        code --install-extension apollographql.vscode-apollo
+        code --install-extension asbx.amzn-cline
+        code --install-extension aws-scripting-guy.cform
+        code --install-extension bierner.markdown-mermaid
+        code --install-extension charliermarsh.ruff
+        code --install-extension esbenp.prettier-vscode
+        code --install-extension fwcd.kotlin
+        code --install-extension github.remotehub
+        code --install-extension github.vscode-pull-request-github
+        code --install-extension marklel.vscode-brazil
+        code --install-extension mathiasfrohlich.kotlin
+        code --install-extension mechatroner.rainbow-csv
+        code --install-extension ms-azuretools.vscode-containers
+        code --install-extension ms-python.black-formatter
+        code --install-extension ms-python.debugpy
+        code --install-extension ms-python.python
+        code --install-extension ms-python.vscode-pylance
+        code --install-extension ms-python.vscode-python-envs
+        code --install-extension ms-toolsai.jupyter
+        code --install-extension ms-toolsai.jupyter-keymap
+        code --install-extension ms-toolsai.jupyter-renderers
+        code --install-extension ms-toolsai.vscode-jupyter-cell-tags
+        code --install-extension ms-toolsai.vscode-jupyter-slideshow
+        code --install-extension ms-vscode-remote.remote-containers
+        code --install-extension ms-vscode-remote.remote-ssh
+        code --install-extension ms-vscode-remote.remote-ssh-edit
+        code --install-extension ms-vscode.azure-repos
+        code --install-extension ms-vscode.remote-explorer
+        code --install-extension ms-vscode.remote-repositories
+        code --install-extension mtxr.sqltools
+        code --install-extension mtxr.sqltools-driver-mysql
+        code --install-extension rangav.vscode-thunder-client
+        code --install-extension redhat.vscode-yaml
+        code --install-extension syler.sass-indented
+        code --install-extension vscjava.vscode-gradle
+        code --install-extension zeshuaro.vscode-python-poetry
+    else
+        echo "VS Code not found, skipping extensions installation"
     fi
 }
 
