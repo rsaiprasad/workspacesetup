@@ -65,6 +65,7 @@ fi
 
 # Run setup functions in order
 run_step git            "Installing Git"                          install_git
+run_step gh             "Installing GitHub CLI"                   install_gh
 run_step zsh            "Installing Zsh"                          install_zsh
 run_step prezto         "Installing Prezto"                       install_prezto
 run_step fonts          "Installing Powerline Fonts"              install_powerline_fonts

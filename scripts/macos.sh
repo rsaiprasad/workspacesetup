@@ -26,8 +26,17 @@ install_git() {
     fi
 }
 
+install_gh() {
+    if ! command -v gh &> /dev/null; then
+        echo "Installing GitHub CLI..."
+        ensure_homebrew
+        brew install gh
+    else
+        echo "GitHub CLI is already installed"
+    fi
+}
+
 install_zsh() {
-    # macOS comes with zsh, but we can install a newer version via Homebrew
     if ! command -v zsh &> /dev/null; then
         echo "Installing zsh..."
         ensure_homebrew
