@@ -124,10 +124,35 @@ configure_tmux() {
     fi
 }
 
+set_default_editor() {
+    echo "Setting default editor to vi..."
+    git config --global core.editor "vi"
+    if ! grep -q 'EDITOR=vi' "$HOME/.zshrc" 2>/dev/null; then
+        echo "" >> "$HOME/.zshrc"
+        echo "# Default editor" >> "$HOME/.zshrc"
+        echo 'export EDITOR=vi' >> "$HOME/.zshrc"
+        echo 'export VISUAL=vi' >> "$HOME/.zshrc"
+    fi
+    echo "Default editor set to vi"
+}
+
+# Cache installed extensions for idempotent installs
+_vscode_installed=""
+_load_vscode_extensions() {
+    if [[ -z "$_vscode_installed" ]] && command -v code &>/dev/null; then
+        _vscode_installed=$(code --list-extensions 2>/dev/null | tr '[:upper:]' '[:lower:]')
+    fi
+}
+
+install_vscode_ext() {
+    local ext="$1"
+    code --install-extension "$ext" --force
+}
+
 install_cline_extension() {
     if command -v code &> /dev/null; then
-        echo "Installing Cline extension for VS Code..."
-        code --install-extension saoudrizwan.claude-dev || echo "Failed to install Cline extension"
+        _load_vscode_extensions
+        install_vscode_ext saoudrizwan.claude-dev || echo "Failed to install Cline extension"
     else
         echo "VS Code not found, skipping Cline extension installation"
     fi

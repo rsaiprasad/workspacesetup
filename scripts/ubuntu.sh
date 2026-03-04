@@ -80,14 +80,18 @@ install_prezto() {
 }
 
 install_powerline_fonts() {
+    local fonts_dir="$HOME/.local/share/fonts"
+
+    if dpkg -s fonts-powerline &>/dev/null && [[ -f "$fonts_dir/MesloLGS NF Regular.ttf" ]]; then
+        echo "Powerline fonts already installed"
+        return
+    fi
+
     echo "Installing Powerline fonts..."
     sudo apt-get update
     sudo apt-get install -y fonts-powerline
 
-    # Also install Nerd Fonts for better compatibility
-    local fonts_dir="$HOME/.local/share/fonts"
     mkdir -p "$fonts_dir"
-
     if [[ ! -f "$fonts_dir/MesloLGS NF Regular.ttf" ]]; then
         echo "Installing MesloLGS Nerd Font..."
         cd /tmp
@@ -151,34 +155,23 @@ install_mise() {
 }
 
 install_languages() {
-    # Ensure mise is in PATH
     export PATH="$HOME/.local/bin:$PATH"
 
-    # Install libatomic1 - required by Node.js
-    echo "Installing Node.js dependencies..."
-    sudo apt-get install -y libatomic1
-
-    if command -v mise &> /dev/null; then
-        echo "Installing Python 3.12 via mise..."
-        mise use --global python@3.12
-
-        echo "Installing Node.js 24 via mise..."
-        mise use --global node@24
-
-        echo "Installing Bun via mise..."
-        mise use --global bun@latest
-
-        # Install CLIs now that Node.js is available
-        eval "$(mise activate bash)"
-
-        echo "Installing Gemini CLI..."
-        npm install -g @google/gemini-cli 2>/dev/null || echo "Gemini CLI may need manual installation"
-
-        echo "Installing Claude Code CLI..."
-        npm install -g @anthropic-ai/claude-code 2>/dev/null || echo "Claude Code CLI may need manual installation"
-    else
+    if ! command -v mise &> /dev/null; then
         echo "mise not found, skipping language installation"
+        return
     fi
+
+    dpkg -s libatomic1 &>/dev/null || { echo "Installing Node.js dependencies..."; sudo apt-get install -y libatomic1; }
+
+    mise ls --global python 2>/dev/null | grep -q "3.12" || { echo "Installing Python 3.12 via mise..."; mise use --global python@3.12; }
+    mise ls --global node 2>/dev/null | grep -q "24" || { echo "Installing Node.js 24 via mise..."; mise use --global node@24; }
+    mise ls --global bun 2>/dev/null | grep -q "bun" || { echo "Installing Bun via mise..."; mise use --global bun@latest; }
+
+    eval "$(mise activate bash)"
+
+    command -v gemini &>/dev/null || { echo "Installing Gemini CLI..."; npm install -g @google/gemini-cli 2>/dev/null || echo "Gemini CLI may need manual installation"; }
+    command -v claude &>/dev/null || { echo "Installing Claude Code CLI..."; npm install -g @anthropic-ai/claude-code 2>/dev/null || echo "Claude Code CLI may need manual installation"; }
 }
 
 install_tmux() {
@@ -218,49 +211,53 @@ install_vscode() {
 
 install_vscode_extensions() {
     if command -v code &> /dev/null; then
-        echo "Installing VS Code extensions..."
-        code --install-extension amazonwebservices-aisolutionsarchitecture.bedrock-vscode-playground
-        code --install-extension amazonwebservices.amazon-q-vscode
-        code --install-extension amazonwebservices.aws-toolkit-vscode
-        code --install-extension amazonwebservices.codewhisperer-for-command-line-companion
-        code --install-extension amzn.amzn-pippin
-        code --install-extension amzn.vscode-crux
-        code --install-extension apollographql.vscode-apollo
-        code --install-extension asbx.amzn-cline
-        code --install-extension aws-scripting-guy.cform
-        code --install-extension bierner.markdown-mermaid
-        code --install-extension charliermarsh.ruff
-        code --install-extension esbenp.prettier-vscode
-        code --install-extension fwcd.kotlin
-        code --install-extension github.remotehub
-        code --install-extension github.vscode-pull-request-github
-        code --install-extension marklel.vscode-brazil
-        code --install-extension mathiasfrohlich.kotlin
-        code --install-extension mechatroner.rainbow-csv
-        code --install-extension ms-azuretools.vscode-containers
-        code --install-extension ms-python.black-formatter
-        code --install-extension ms-python.debugpy
-        code --install-extension ms-python.python
-        code --install-extension ms-python.vscode-pylance
-        code --install-extension ms-python.vscode-python-envs
-        code --install-extension ms-toolsai.jupyter
-        code --install-extension ms-toolsai.jupyter-keymap
-        code --install-extension ms-toolsai.jupyter-renderers
-        code --install-extension ms-toolsai.vscode-jupyter-cell-tags
-        code --install-extension ms-toolsai.vscode-jupyter-slideshow
-        code --install-extension ms-vscode-remote.remote-containers
-        code --install-extension ms-vscode-remote.remote-ssh
-        code --install-extension ms-vscode-remote.remote-ssh-edit
-        code --install-extension ms-vscode.azure-repos
-        code --install-extension ms-vscode.remote-explorer
-        code --install-extension ms-vscode.remote-repositories
-        code --install-extension mtxr.sqltools
-        code --install-extension mtxr.sqltools-driver-mysql
-        code --install-extension rangav.vscode-thunder-client
-        code --install-extension redhat.vscode-yaml
-        code --install-extension syler.sass-indented
-        code --install-extension vscjava.vscode-gradle
-        code --install-extension zeshuaro.vscode-python-poetry
+        _load_vscode_extensions
+        echo "Installing VS Code extensions (skipping already installed)..."
+        local exts=(
+            amazonwebservices-aisolutionsarchitecture.bedrock-vscode-playground
+            amazonwebservices.amazon-q-vscode
+            amazonwebservices.aws-toolkit-vscode
+            amzn.amzn-pippin
+            apollographql.vscode-apollo
+            asbx.amzn-cline
+            aws-scripting-guy.cform
+            bierner.markdown-mermaid
+            charliermarsh.ruff
+            esbenp.prettier-vscode
+            fwcd.kotlin
+            github.remotehub
+            github.vscode-pull-request-github
+            marklel.vscode-brazil
+            mathiasfrohlich.kotlin
+            mechatroner.rainbow-csv
+            ms-azuretools.vscode-containers
+            ms-python.black-formatter
+            ms-python.debugpy
+            ms-python.python
+            ms-python.vscode-pylance
+            ms-python.vscode-python-envs
+            ms-toolsai.jupyter
+            ms-toolsai.jupyter-keymap
+            ms-toolsai.jupyter-renderers
+            ms-toolsai.vscode-jupyter-cell-tags
+            ms-toolsai.vscode-jupyter-slideshow
+            ms-vscode-remote.remote-containers
+            ms-vscode-remote.remote-ssh
+            ms-vscode-remote.remote-ssh-edit
+            ms-vscode.azure-repos
+            ms-vscode.remote-explorer
+            ms-vscode.remote-repositories
+            mtxr.sqltools
+            mtxr.sqltools-driver-mysql
+            rangav.vscode-thunder-client
+            redhat.vscode-yaml
+            syler.sass-indented
+            vscjava.vscode-gradle
+            zeshuaro.vscode-python-poetry
+        )
+        for ext in "${exts[@]}"; do
+            install_vscode_ext "$ext"
+        done
     else
         echo "VS Code not found, skipping extensions installation"
     fi
