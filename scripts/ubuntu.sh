@@ -2,6 +2,35 @@
 
 # Ubuntu-specific installation functions
 
+install_homebrew() {
+    if ! command -v brew &> /dev/null; then
+        echo "Installing Homebrew..."
+
+        # Install dependencies required by Homebrew
+        sudo apt-get update
+        sudo apt-get install -y build-essential procps curl file git
+
+        # Install Homebrew
+        NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+        # Add Homebrew to PATH for current session
+        if [[ -d "/home/linuxbrew/.linuxbrew" ]]; then
+            eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+        fi
+    else
+        echo "Homebrew is already installed"
+    fi
+
+    # Add Homebrew to shell configuration if not already present
+    local zshrc="$HOME/.zshrc"
+    if [[ -f "$zshrc" ]] && ! grep -q "linuxbrew" "$zshrc" 2>/dev/null; then
+        echo "" >> "$zshrc"
+        echo "# Homebrew" >> "$zshrc"
+        echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "$zshrc"
+        echo "Homebrew added to .zshrc"
+    fi
+}
+
 install_git() {
     if ! command -v git &> /dev/null; then
         echo "Installing git..."
@@ -150,6 +179,25 @@ install_languages() {
     else
         echo "mise not found, skipping language installation"
     fi
+}
+
+install_tmux() {
+    if ! command -v tmux &> /dev/null; then
+        echo "Installing tmux..."
+        sudo apt-get update
+        sudo apt-get install -y tmux
+    else
+        echo "tmux is already installed"
+    fi
+
+    # Install Oh My Tmux dependencies (awk, perl, grep, sed are usually present)
+    sudo apt-get install -y perl 2>/dev/null || true
+
+    # Install clipboard support for tmux copy-to-clipboard (xsel, xclip, or wl-copy)
+    sudo apt-get install -y xsel xclip wl-clipboard 2>/dev/null || true
+
+    # Configure Oh My Tmux
+    configure_tmux
 }
 
 install_vscode() {

@@ -182,6 +182,20 @@ install_languages() {
     fi
 }
 
+install_tmux() {
+    ensure_homebrew
+
+    if ! command -v tmux &> /dev/null; then
+        echo "Installing tmux..."
+        brew install tmux
+    else
+        echo "tmux is already installed"
+    fi
+
+    # Configure Oh My Tmux
+    configure_tmux
+}
+
 install_vscode() {
     if [[ ! -d "/Applications/Visual Studio Code.app" ]] && ! command -v code &> /dev/null; then
         echo "Installing VS Code..."

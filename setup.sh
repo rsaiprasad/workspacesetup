@@ -90,6 +90,10 @@ echo "=== Installing Python, Node.js, and Bun via mise ==="
 install_languages
 
 echo ""
+echo "=== Installing tmux with Oh My Tmux ==="
+install_tmux
+
+echo ""
 echo "=== Installing VS Code ==="
 install_vscode
 

@@ -105,6 +105,25 @@ configure_zshrc_mise() {
     fi
 }
 
+configure_tmux() {
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+    local tmux_dir="$HOME/.tmux"
+
+    if [[ ! -d "$tmux_dir" ]]; then
+        echo "Installing Oh My Tmux..."
+        git clone --single-branch https://github.com/gpakosz/.tmux.git "$tmux_dir"
+        ln -sf "$tmux_dir/.tmux.conf" "$HOME/.tmux.conf"
+    else
+        echo "Oh My Tmux is already installed"
+    fi
+
+    # Deploy custom tmux config
+    if [[ -f "$script_dir/configs/tmux.conf.local" ]]; then
+        cp "$script_dir/configs/tmux.conf.local" "$HOME/.tmux.conf.local"
+        echo "tmux.conf.local deployed"
+    fi
+}
+
 install_cline_extension() {
     if command -v code &> /dev/null; then
         echo "Installing Cline extension for VS Code..."
