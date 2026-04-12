@@ -121,11 +121,9 @@ install_languages() {
         return
     fi
 
-    # Node.js may need libatomic
+    # Node.js may need libatomic; gpg-agent (gnupg2) needed for mise to verify downloads
     rpm -q libatomic &>/dev/null || sudo dnf install -y libatomic 2>/dev/null || true
-
-    # Disable GPG verification for Node.js — gpg-agent is not available on AL2023 by default
-    export MISE_NODE_VERIFY=false
+    rpm -q gnupg2 &>/dev/null || sudo dnf install -y gnupg2 2>/dev/null || true
 
     mise ls --global python 2>/dev/null | grep -q "3.12" || { echo "Installing Python 3.12 via mise..."; mise use --global python@3.12; }
     mise ls --global node 2>/dev/null | grep -q "24" || { echo "Installing Node.js 24 via mise..."; mise use --global node@24; }
