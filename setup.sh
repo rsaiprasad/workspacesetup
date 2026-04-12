@@ -3,7 +3,7 @@
 set -e
 
 # Workspace Setup Script
-# Supports: Ubuntu and macOS
+# Supports: Ubuntu, macOS, and Amazon Linux 2023
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MARKER_DIR="$HOME/.workspace_setup_markers"
@@ -35,6 +35,8 @@ detect_os() {
         . /etc/os-release
         if [[ "$ID" == "ubuntu" ]]; then
             echo "ubuntu"
+        elif [[ "$ID" == "amzn" ]]; then
+            echo "amzn"
         else
             echo "unsupported"
         fi
@@ -46,7 +48,7 @@ detect_os() {
 OS=$(detect_os)
 
 if [[ "$OS" == "unsupported" ]]; then
-    echo "Error: Unsupported operating system. This script supports Ubuntu and macOS only."
+    echo "Error: Unsupported operating system. This script supports Ubuntu, macOS, and Amazon Linux 2023."
     exit 1
 fi
 
@@ -61,6 +63,8 @@ if [[ "$OS" == "ubuntu" ]]; then
     source "$SCRIPT_DIR/scripts/ubuntu.sh"
 elif [[ "$OS" == "macos" ]]; then
     source "$SCRIPT_DIR/scripts/macos.sh"
+elif [[ "$OS" == "amzn" ]]; then
+    source "$SCRIPT_DIR/scripts/amzn.sh"
 fi
 
 # Run setup functions in order

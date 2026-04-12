@@ -1,6 +1,6 @@
 # Workspace Setup
 
-Automated workspace setup script for Ubuntu and macOS. Sets up a development environment with zsh, Prezto, and essential development tools.
+Automated workspace setup script for Ubuntu, macOS, and Amazon Linux 2023. Sets up a development environment with zsh, Prezto, and essential development tools.
 
 ## Features
 
@@ -32,6 +32,10 @@ Automated workspace setup script for Ubuntu and macOS. Sets up a development env
 - **Ubuntu Only**:
   - Terminator terminal with Solarized Dark theme
 
+- **Amazon Linux 2023 Notes**:
+  - Uses dnf package manager
+  - Obsidian requires manual AppImage download (no RPM available)
+
 ## Quick Start
 
 ```bash
@@ -43,7 +47,7 @@ chmod +x setup.sh
 
 ## Requirements
 
-- Ubuntu 20.04+ or macOS 12+
+- Ubuntu 20.04+ or macOS 12+ or Amazon Linux 2023
 - sudo access (for installing packages)
 - Internet connection
 
