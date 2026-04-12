@@ -103,6 +103,15 @@ install_zoom() {
     fi
 }
 
+install_gnupg() {
+    if ! command -v gpg &> /dev/null; then
+        echo "Installing GnuPG..."
+        sudo dnf install -y gnupg2
+    else
+        echo "GnuPG is already installed"
+    fi
+}
+
 install_mise() {
     if ! command -v mise &> /dev/null; then
         echo "Installing mise..."
@@ -121,9 +130,8 @@ install_languages() {
         return
     fi
 
-    # Node.js may need libatomic; gpg-agent (gnupg2) needed for mise to verify downloads
+    # Node.js may need libatomic
     rpm -q libatomic &>/dev/null || sudo dnf install -y libatomic 2>/dev/null || true
-    rpm -q gnupg2 &>/dev/null || sudo dnf install -y gnupg2 2>/dev/null || true
 
     mise ls --global python 2>/dev/null | grep -q "3.12" || { echo "Installing Python 3.12 via mise..."; mise use --global python@3.12; }
     mise ls --global node 2>/dev/null | grep -q "24" || { echo "Installing Node.js 24 via mise..."; mise use --global node@24; }

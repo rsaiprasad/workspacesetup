@@ -157,6 +157,16 @@ install_zoom() {
     fi
 }
 
+install_gnupg() {
+    if ! command -v gpg &> /dev/null; then
+        echo "Installing GnuPG..."
+        sudo apt-get update
+        sudo apt-get install -y gnupg
+    else
+        echo "GnuPG is already installed"
+    fi
+}
+
 install_mise() {
     if ! command -v mise &> /dev/null; then
         echo "Installing mise..."

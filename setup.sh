@@ -82,6 +82,7 @@ if [[ "$OS" == "macos" ]]; then
     run_step iterm2          "Installing iTerm2"                  install_iterm2
 fi
 
+run_step gnupg          "Installing GnuPG"                        install_gnupg
 run_step mise           "Installing mise"                         install_mise
 run_step languages      "Installing Python, Node.js, and Bun via mise" install_languages
 run_step tmux           "Installing tmux with Oh My Tmux"         install_tmux

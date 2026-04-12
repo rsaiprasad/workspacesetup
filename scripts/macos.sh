@@ -156,6 +156,16 @@ install_iterm2() {
     fi
 }
 
+install_gnupg() {
+    if ! command -v gpg &> /dev/null; then
+        echo "Installing GnuPG..."
+        ensure_homebrew
+        brew install gnupg
+    else
+        echo "GnuPG is already installed"
+    fi
+}
+
 install_mise() {
     if ! command -v mise &> /dev/null; then
         echo "Installing mise..."
