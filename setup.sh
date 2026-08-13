@@ -85,7 +85,9 @@ fi
 run_step gnupg          "Installing GnuPG"                        install_gnupg
 run_step mise           "Installing mise"                         install_mise
 run_step languages      "Installing Python, Node.js, and Bun via mise" install_languages
+run_step codex_cli      "Installing Codex CLI"                    install_codex_cli
 run_step tmux           "Installing tmux with Oh My Tmux"         install_tmux
+run_step codex_tmux     "Configuring persistent Codex sessions"   configure_codex_tmux
 run_step vscode         "Installing VS Code"                      install_vscode
 run_step vscode_ext     "Installing VS Code Extensions"           install_vscode_extensions
 run_step cline          "Installing Cline Extension"              install_cline_extension
