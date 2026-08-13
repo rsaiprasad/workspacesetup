@@ -72,7 +72,15 @@ run_step git            "Installing Git"                          install_git
 run_step gh             "Installing GitHub CLI"                   install_gh
 run_step zsh            "Installing Zsh"                          install_zsh
 run_step prezto         "Installing Prezto"                       install_prezto
-run_step fonts          "Installing Powerline Fonts"              install_powerline_fonts
+if [[ "$OS" == "ubuntu" ]]; then
+    # Reconcile this on every run. Older releases may have written a successful
+    # fonts marker without installing or selecting a usable terminal font.
+    echo ""
+    echo "=== Configuring Ubuntu terminal fonts ==="
+    configure_ubuntu_terminal_font
+else
+    run_step fonts      "Installing Powerline Fonts"              install_powerline_fonts
+fi
 run_step chrome         "Installing Chrome"                       install_chrome
 run_step obsidian       "Installing Obsidian"                     install_obsidian
 run_step zoom           "Installing Zoom"                         install_zoom
@@ -108,4 +116,10 @@ echo "=========================================="
 echo ""
 echo "Please log out and log back in for all changes to take effect."
 echo "After logging back in, open a new terminal to use zsh with Prezto."
+if [[ "$OS" == "ubuntu" && "${UBUNTU_GNOME_TERMINAL_RESTART_REQUIRED:-0}" == "1" ]]; then
+    echo ""
+    echo "IMPORTANT: Save your terminal work and close every GNOME Terminal"
+    echo "window before relaunching it. A new tab alone will reuse the old"
+    echo "terminal server and may keep the previous font loaded."
+fi
 echo ""

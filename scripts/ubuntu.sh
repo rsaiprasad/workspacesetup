@@ -2,6 +2,49 @@
 
 # Ubuntu-specific installation functions
 
+MESLO_NERD_FONT_VERSION="3.5.0"
+MESLO_NERD_FONT_ARCHIVE_SHA256="24cfe8148aeb600891f1d81180e77ecc967a814cde75dc7e63ec5bc2b0ab3eef"
+MESLO_NERD_FONT_FAMILY="MesloLGS Nerd Font Mono"
+
+WORKSPACE_SETUP_FC_CACHE="${WORKSPACE_SETUP_FC_CACHE:-/usr/bin/fc-cache}"
+WORKSPACE_SETUP_FC_MATCH="${WORKSPACE_SETUP_FC_MATCH:-/usr/bin/fc-match}"
+WORKSPACE_SETUP_FC_SCAN="${WORKSPACE_SETUP_FC_SCAN:-/usr/bin/fc-scan}"
+WORKSPACE_SETUP_GSETTINGS="${WORKSPACE_SETUP_GSETTINGS:-/usr/bin/gsettings}"
+WORKSPACE_SETUP_SYSTEMCTL="${WORKSPACE_SETUP_SYSTEMCTL:-/usr/bin/systemctl}"
+
+meslo_nerd_font_mono_installed() {
+    local fonts_dir="$HOME/.local/share/fonts/MesloLGSNerdFontMono"
+    local font_details
+    local codepoint
+    local style
+
+    [[ -x "$WORKSPACE_SETUP_FC_MATCH" && -x "$WORKSPACE_SETUP_FC_SCAN" ]] || return 1
+
+    for style in Regular Bold Italic BoldItalic; do
+        [[ -s "$fonts_dir/MesloLGSNerdFontMono-${style}.ttf" ]] || return 1
+        font_details=$("$WORKSPACE_SETUP_FC_SCAN" --format='%{family[0]}|%{spacing}' \
+            "$fonts_dir/MesloLGSNerdFontMono-${style}.ttf") || return 1
+        [[ "$font_details" == "$MESLO_NERD_FONT_FAMILY|100" ]] || return 1
+    done
+
+    for codepoint in e0a0 e0b0 e0b2 276f; do
+        font_details=$("$WORKSPACE_SETUP_FC_MATCH" --format='%{family[0]}|%{spacing}' \
+            "$MESLO_NERD_FONT_FAMILY:charset=$codepoint") || return 1
+        [[ "$font_details" == "$MESLO_NERD_FONT_FAMILY|100" ]] || return 1
+    done
+}
+
+migrate_terminator_font_name() {
+    local terminator_config="$HOME/.config/terminator/config"
+
+    if [[ -f "$terminator_config" ]] && \
+       grep -Fqx '    font = MesloLGS NF 11' "$terminator_config"; then
+        sed -i 's/^    font = MesloLGS NF 11$/    font = MesloLGS Nerd Font Mono 11/' \
+            "$terminator_config"
+        echo "Terminator font migrated to $MESLO_NERD_FONT_FAMILY"
+    fi
+}
+
 install_homebrew() {
     if ! command -v brew &> /dev/null; then
         echo "Installing Homebrew..."
@@ -95,32 +138,131 @@ install_prezto() {
 }
 
 install_powerline_fonts() {
-    local fonts_dir="$HOME/.local/share/fonts"
+    local fonts_dir="$HOME/.local/share/fonts/MesloLGSNerdFontMono"
+    local archive_url="https://github.com/ryanoasis/nerd-fonts/releases/download/v${MESLO_NERD_FONT_VERSION}/Meslo.tar.xz"
+    local staging_dir
+    local temp_dir
+    local style
 
-    if dpkg -s fonts-powerline &>/dev/null && [[ -f "$fonts_dir/MesloLGS NF Regular.ttf" ]]; then
-        echo "Powerline fonts already installed"
+    if meslo_nerd_font_mono_installed; then
+        echo "$MESLO_NERD_FONT_FAMILY is already installed"
         return
     fi
 
-    echo "Installing Powerline fonts..."
+    echo "Installing $MESLO_NERD_FONT_FAMILY v${MESLO_NERD_FONT_VERSION}..."
     sudo apt-get update
-    sudo apt-get install -y fonts-powerline
+    sudo apt-get install -y ca-certificates curl fontconfig xz-utils
 
-    mkdir -p "$fonts_dir"
-    if [[ ! -f "$fonts_dir/MesloLGS NF Regular.ttf" ]]; then
-        echo "Installing MesloLGS Nerd Font..."
-        cd /tmp
-        curl -fLo "MesloLGS NF Regular.ttf" \
-            "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf" 2>/dev/null || true
-        curl -fLo "MesloLGS NF Bold.ttf" \
-            "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf" 2>/dev/null || true
-        curl -fLo "MesloLGS NF Italic.ttf" \
-            "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf" 2>/dev/null || true
-        curl -fLo "MesloLGS NF Bold Italic.ttf" \
-            "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf" 2>/dev/null || true
+    temp_dir=$(mktemp -d "${TMPDIR:-/tmp}/meslo-nerd-font.XXXXXX")
+    if ! (
+        set -e
+        trap 'rm -rf -- "$temp_dir"' EXIT
 
-        mv MesloLGS*.ttf "$fonts_dir/" 2>/dev/null || true
-        fc-cache -fv
+        curl --fail --location --retry 3 \
+            --output "$temp_dir/Meslo.tar.xz" "$archive_url" || exit 1
+        printf '%s  %s\n' "$MESLO_NERD_FONT_ARCHIVE_SHA256" "$temp_dir/Meslo.tar.xz" \
+            | sha256sum --check --status || exit 1
+
+        staging_dir="$temp_dir/install"
+        mkdir -p "$staging_dir" || exit 1
+        for style in Regular Bold Italic BoldItalic; do
+            tar -xf "$temp_dir/Meslo.tar.xz" -C "$temp_dir" \
+                "MesloLGSNerdFontMono-${style}.ttf" || exit 1
+            install -m 0644 "$temp_dir/MesloLGSNerdFontMono-${style}.ttf" \
+                "$staging_dir/" || exit 1
+        done
+
+        # Only replace the installed set after every face has downloaded and
+        # extracted successfully, so a failed repair leaves the old set intact.
+        mkdir -p "$fonts_dir" || exit 1
+        install -m 0644 "$staging_dir"/*.ttf "$fonts_dir/" || exit 1
+    ); then
+        echo "Failed to download or install $MESLO_NERD_FONT_FAMILY" >&2
+        return 1
+    fi
+
+    "$WORKSPACE_SETUP_FC_CACHE" -f "$HOME/.local/share/fonts"
+    if ! meslo_nerd_font_mono_installed; then
+        echo "Failed to install the exact font family: $MESLO_NERD_FONT_FAMILY" >&2
+        return 1
+    fi
+
+    UBUNTU_TERMINAL_FONT_FILES_CHANGED=1
+    echo "$MESLO_NERD_FONT_FAMILY installed and verified"
+}
+
+configure_ubuntu_terminal_font() {
+    local current_font
+    local current_use_system_font
+    local font_size="12"
+    local profile_id
+    local profile_schema
+    local configured_font
+    local profile_changed=0
+
+    if ! meslo_nerd_font_mono_installed; then
+        install_powerline_fonts || return 1
+    fi
+
+    # Migrate only the exact legacy value written by older versions of this
+    # repository; leave user-selected Terminator fonts untouched.
+    migrate_terminator_font_name
+
+    if [[ -n "${SSH_CONNECTION:-}${SSH_TTY:-}" ]]; then
+        echo "SSH session detected; skipping GNOME Terminal configuration"
+        return
+    fi
+
+    if [[ ! -x "$WORKSPACE_SETUP_GSETTINGS" ]] || [[ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]] || \
+       [[ -z "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]]; then
+        echo "Local GNOME desktop session not detected; skipping GNOME Terminal configuration"
+        return
+    fi
+
+    if ! "$WORKSPACE_SETUP_GSETTINGS" list-schemas | grep -Fxq 'org.gnome.Terminal.ProfilesList'; then
+        echo "GNOME Terminal is not installed; skipping its profile configuration"
+        return
+    fi
+
+    profile_id=$("$WORKSPACE_SETUP_GSETTINGS" get org.gnome.Terminal.ProfilesList default | tr -d "'")
+    if [[ -z "$profile_id" ]]; then
+        echo "GNOME Terminal has no default profile; skipping its profile configuration"
+        return
+    fi
+
+    profile_schema="org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:${profile_id}/"
+    current_font=$("$WORKSPACE_SETUP_GSETTINGS" get "$profile_schema" font | tr -d "'")
+    current_use_system_font=$("$WORKSPACE_SETUP_GSETTINGS" get "$profile_schema" use-system-font)
+
+    if [[ "$current_use_system_font" == "true" ]] && \
+       "$WORKSPACE_SETUP_GSETTINGS" list-schemas | grep -Fxq 'org.gnome.desktop.interface'; then
+        current_font=$("$WORKSPACE_SETUP_GSETTINGS" get \
+            org.gnome.desktop.interface monospace-font-name | tr -d "'")
+    fi
+    if [[ "$current_font" =~ ([0-9]+([.][0-9]+)?)$ ]]; then
+        font_size="${BASH_REMATCH[1]}"
+    fi
+    configured_font="$MESLO_NERD_FONT_FAMILY $font_size"
+
+    if [[ "$current_font" != "$configured_font" || "$current_use_system_font" != "false" ]]; then
+        profile_changed=1
+    fi
+
+    "$WORKSPACE_SETUP_GSETTINGS" set "$profile_schema" font "$configured_font"
+    "$WORKSPACE_SETUP_GSETTINGS" set "$profile_schema" use-system-font false
+
+    if [[ "$("$WORKSPACE_SETUP_GSETTINGS" get "$profile_schema" font)" != "'$configured_font'" ]] || \
+       [[ "$("$WORKSPACE_SETUP_GSETTINGS" get "$profile_schema" use-system-font)" != "false" ]]; then
+        echo "Failed to configure the GNOME Terminal font" >&2
+        return 1
+    fi
+
+    echo "GNOME Terminal default profile now uses $configured_font"
+    if [[ "${UBUNTU_TERMINAL_FONT_FILES_CHANGED:-0}" == "1" || "$profile_changed" == "1" ]] && \
+       "$WORKSPACE_SETUP_SYSTEMCTL" --user --quiet is-active gnome-terminal-server.service 2>/dev/null; then
+        UBUNTU_GNOME_TERMINAL_RESTART_REQUIRED=1
+        echo "IMPORTANT: GNOME Terminal is already running. Save your terminal work,"
+        echo "close every GNOME Terminal window, and relaunch it to load the new font."
     fi
 }
 
@@ -315,7 +457,7 @@ install_terminator() {
     foreground_color = "#839496"
     palette = "#073642:#dc322f:#859900:#b58900:#268bd2:#d33682:#2aa198:#eee8d5:#002b36:#cb4b16:#586e75:#657b83:#839496:#6c71c4:#93a1a1:#fdf6e3"
     use_system_font = False
-    font = MesloLGS NF 11
+    font = MesloLGS Nerd Font Mono 11
     scrollback_lines = 10000
 
 [layouts]

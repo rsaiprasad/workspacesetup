@@ -1,0 +1,17 @@
+name: Shell tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ubuntu-terminal-font:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check shell syntax
+        run: bash -n setup.sh scripts/*.sh tests/*.sh
+      - name: Test Ubuntu terminal font setup
+        run: bash tests/ubuntu_terminal_font_test.sh
+      - name: Verify official Meslo archive and font metadata
+        run: bash tests/ubuntu_terminal_font_integration_test.sh
