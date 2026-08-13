@@ -124,6 +124,64 @@ configure_tmux() {
     fi
 }
 
+install_codex_cli() {
+    export PATH="$HOME/.local/bin:$PATH"
+
+    if command -v codex &> /dev/null; then
+        echo "Codex CLI is already installed"
+        codex --version
+        return
+    fi
+
+    echo "Installing Codex CLI..."
+    local installer
+    installer=$(mktemp "${TMPDIR:-/tmp}/codex-install.XXXXXX")
+
+    if ! curl -fsSL https://chatgpt.com/codex/install.sh -o "$installer"; then
+        rm -f "$installer"
+        echo "Failed to download the Codex CLI installer"
+        return 1
+    fi
+
+    if ! CODEX_NON_INTERACTIVE=1 sh "$installer"; then
+        rm -f "$installer"
+        echo "Codex CLI installation failed"
+        return 1
+    fi
+    rm -f "$installer"
+
+    hash -r
+    if ! command -v codex &> /dev/null; then
+        echo "Codex CLI installed, but codex is not available in PATH"
+        return 1
+    fi
+
+    codex --version
+}
+
+configure_codex_tmux() {
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+    local config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/workspacesetup"
+    local zshrc="${ZDOTDIR:-$HOME}/.zshrc"
+    local source_line='source "${XDG_CONFIG_HOME:-$HOME/.config}/workspacesetup/codex-tmux.zsh"'
+
+    mkdir -p "$HOME/.local/bin" "$config_dir" "$(dirname "$zshrc")"
+    install -m 0755 "$script_dir/configs/codex-tmux" "$HOME/.local/bin/codex-tmux"
+    install -m 0644 "$script_dir/configs/codex-tmux.zsh" "$config_dir/codex-tmux.zsh"
+
+    touch "$zshrc"
+    if ! grep -Fq 'workspacesetup/codex-tmux.zsh' "$zshrc" 2>/dev/null; then
+        printf '\n# Start interactive Codex CLI work in persistent tmux sessions.\n%s\n' \
+            "$source_line" >> "$zshrc"
+        echo "Codex tmux integration added to .zshrc"
+    else
+        echo "Codex tmux integration is already in .zshrc"
+    fi
+
+    echo "Codex tmux wrapper deployed"
+}
+
 set_default_editor() {
     echo "Setting default editor to vi..."
     git config --global core.editor "vi"

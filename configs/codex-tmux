@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+codex_bin="${CODEX_REAL_BIN:-$(type -P codex || true)}"
+
+if [[ -z "$codex_bin" || ! -x "$codex_bin" ]]; then
+    printf 'codex-tmux: Codex CLI was not found.\n' >&2
+    printf 'Install Codex or set CODEX_REAL_BIN to its executable.\n' >&2
+    exit 127
+fi
+
+# Avoid nested tmux sessions and preserve normal behavior for scripts and CI.
+if [[ -n "${TMUX:-}" || "${CODEX_TMUX_BYPASS:-0}" == "1" || ! -t 0 || ! -t 1 ]]; then
+    exec "$codex_bin" "$@"
+fi
+
+tmux_bin="${TMUX_BIN:-$(type -P tmux || true)}"
+if [[ -z "$tmux_bin" || ! -x "$tmux_bin" ]]; then
+    printf 'codex-tmux: tmux was not found.\n' >&2
+    exit 127
+fi
+
+workspace_root=$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null || printf '%s' "$PWD")
+workspace_name=$(basename "$workspace_root")
+workspace_slug=$(printf '%s' "$workspace_name" | tr -cs '[:alnum:]_-' '-' | sed -E 's/^-+//; s/-+$//')
+if [[ -z "$workspace_slug" ]]; then
+    workspace_slug="workspace"
+fi
+workspace_id=$(printf '%s' "$workspace_root" | cksum | awk '{print $1}')
+
+session_name="${CODEX_TMUX_SESSION:-codex-$workspace_slug-$workspace_id}"
+
+# Create or attach to the project session. -D hands an existing session from an
+# old local/SSH client to this terminal. Existing sessions keep their running
+# Codex process, so arguments supplied during a reattach are intentionally ignored.
+exec "$tmux_bin" new-session -A -D -s "$session_name" -c "$PWD" -n codex "$codex_bin" "$@"
