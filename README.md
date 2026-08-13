@@ -33,6 +33,7 @@ Automated workspace setup script for Ubuntu, macOS, and Amazon Linux 2023. Sets 
 
 - **Ubuntu Only**:
   - Terminator terminal with Solarized Dark theme
+  - GNOME Terminal configured with a fixed-width Nerd Font
 
 - **Amazon Linux 2023 Notes**:
   - Uses dnf package manager
@@ -46,6 +47,9 @@ cd workspacesetup
 chmod +x setup.sh
 ./setup.sh
 ```
+
+Run the script as your normal desktop user, not with `sudo`; it invokes `sudo`
+only for the individual system packages that require it.
 
 ## Requirements
 
@@ -67,8 +71,8 @@ chmod +x setup.sh
    - History substring search
 
 ### Fonts
-- Powerline fonts
-- MesloLGS Nerd Font (for terminal theme compatibility)
+- MesloLGS Nerd Font with Powerline glyphs
+- Fixed-width MesloLGS Nerd Font Mono on Ubuntu
 
 ### Development Tools
 - **Git**: Version control
@@ -97,9 +101,17 @@ After running the setup script:
 
 ### Terminal Font Configuration
 
-If you see broken characters in your prompt, set your terminal font to:
-- **MesloLGS NF** or
-- **Meslo LG Nerd Font**
+On Ubuntu, setup installs the fixed-width `MesloLGS Nerd Font Mono` family and
+configures both GNOME Terminal and Terminator to use it. The exact family name
+matters: the non-Mono build can cause excessive character spacing, while an
+unpatched system font renders Prezto's Powerline glyphs incorrectly.
+
+The Ubuntu installer uses the checksum-verified Meslo archive from the
+[official Nerd Fonts releases](https://github.com/ryanoasis/nerd-fonts/releases).
+
+If GNOME Terminal was open while setup ran, save your terminal work, close
+every GNOME Terminal window, and relaunch it. Opening only a new tab is not
+enough because all tabs can share the existing terminal server process.
 
 ### Manual CLI Installation
 
@@ -171,10 +183,16 @@ Edit `~/.config/terminator/config` to customize colors and settings.
 ### Fonts not displaying correctly
 ```bash
 # Ubuntu
-fc-cache -fv
+/usr/bin/fc-match 'MesloLGS Nerd Font Mono'
+printf '\uE0A0 branch  \uE0B0 separator  \uE0B2 reverse  \u276F prompt\n'
 
 # macOS - fonts should auto-reload
 ```
+
+The Ubuntu font match should report `MesloLGS Nerd Font Mono`. If the glyphs
+remain wrong, fully quit and relaunch GNOME Terminal so it rebuilds its font
+map. When connected over SSH, the local terminal still controls glyph
+rendering, so install and select a compatible Nerd Font on the client machine.
 
 ### mise not found after install
 ```bash
